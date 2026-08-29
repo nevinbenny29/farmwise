@@ -154,4 +154,7 @@ app.post('/api/auth/logout', (req, res) => {
 
 app.get('*splat', (req, res) => res.sendFile(path.join(publicDir, 'main.html')));
 
+console.log('HEALTH ROUTE VERSION: 2026-08-30');
+app.listen(PORT, () => console.log(`FarmWise server running on port ${PORT}`));
+
 app.listen(PORT, () => console.log(`FarmWise server running on port ${PORT}`));

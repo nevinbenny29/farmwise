@@ -115,14 +115,15 @@ function auth(req, res, next) {
 // =========================
 
 async function sendOtp(email, otp) {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error('SMTP_USER or SMTP_PASS is missing');
-  }
+  if (!transporter) throw new Error('SMTP is not configured');
 
   await transporter.sendMail({
-    from: `"FarmWise" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to: email,
     subject: 'FarmWise email verification code',
+    ...
+  });
+}
 
     text:
       `Your FarmWise verification code is ${otp}.\n\n` +

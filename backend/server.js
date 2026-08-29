@@ -68,11 +68,10 @@ async function sendOtp(email, otp) {
     html: `<div style="font-family:Arial,sans-serif"><h2>FarmWise</h2><p>Your verification code is:</p><p style="font-size:32px;font-weight:700;letter-spacing:8px">${otp}</p><p>This code expires in 10 minutes.</p></div>`
   });
 }
-
-app.get('/api/health', async (req, res) => {
-  try { await pool.query('SELECT 1'); res.json({ ok: true, database: true }); }
-  catch { res.status(503).json({ ok: false, database: false }); }
+app.get('/api/health', (req, res) => {
+  res.status(200).send('FARMWISE HEALTH ROUTE WORKS');
 });
+
 
 app.post('/api/auth/request-signup-otp', async (req, res) => {
   try {

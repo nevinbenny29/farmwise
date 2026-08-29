@@ -49,10 +49,12 @@ const transporter = nodemailer.createTransport({
 });
 
 transporter.verify()
-  .then(() => console.log('SMTP connection works'))
-  .catch(err => console.error('SMTP connection failed:', err.message));
+  .then(() => {
+    console.log('SMTP connection works');
+  })
+  .catch((err) => {
+    console.error('SMTP connection failed:', err.message);
   });
-
 // =========================
 // HELPERS
 // =========================

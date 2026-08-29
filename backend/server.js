@@ -37,7 +37,6 @@ app.use(express.static(publicDir));
 // =========================
 // GMAIL SMTP
 // =========================
-
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: Number(process.env.SMTP_PORT || 587),
@@ -49,13 +48,9 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Test SMTP connection when server starts
 transporter.verify()
-  .then(() => {
-    console.log('SMTP connection works');
-  })
-  .catch((err) => {
-    console.error('SMTP connection failed:', err.message);
+  .then(() => console.log('SMTP connection works'))
+  .catch(err => console.error('SMTP connection failed:', err.message));
   });
 
 // =========================

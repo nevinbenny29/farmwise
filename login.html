@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In | FarmWise</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d' },
+            accent: { 400:'#fbbf24',500:'#f59e0b',600:'#d97706' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex items-center justify-center p-4">
+ 
+  <div class="w-full max-w-4xl bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden grid md:grid-cols-2">
+ 
+    <!-- Left branding panel -->
+    <div class="hidden md:flex flex-col justify-between bg-gradient-to-br from-brand-900 via-brand-800 to-slate-900 text-white p-10 relative overflow-hidden">
+      <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl pointer-events-none"><i class="fa-solid fa-leaf"></i></div>
+      <div class="relative z-10">
+        <div class="flex items-center space-x-3 mb-10">
+          <div class="w-11 h-11 bg-gradient-to-br from-brand-500 to-brand-700 rounded-2xl flex items-center justify-center text-xl shadow-lg"><i class="fa-solid fa-leaf"></i></div>
+          <span class="text-2xl font-black">Farm<span class="text-brand-400">Wise</span></span>
+        </div>
+        <h1 class="text-2xl font-black leading-snug mb-3">One account for every mandi, seed rate, and shared ride.</h1>
+        <p class="text-slate-300 text-sm leading-relaxed">Sign in with your email to unlock price alerts, transport pooling, and personalized crop advisories.</p>
+      </div>
+      <div class="relative z-10 text-[11px] text-slate-400">Secure Client-Side Cloud Database Active.</div>
+    </div>
+ 
+    <!-- Right form panel -->
+    <div class="p-8 sm:p-10">
+      <!-- Tabs -->
+      <div class="flex bg-slate-100 rounded-2xl p-1 mb-8 text-sm font-bold">
+        <button id="tab-login" onclick="switchTab('login')" class="flex-1 py-2.5 rounded-xl transition bg-white shadow-sm text-brand-700">Login</button>
+        <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 py-2.5 rounded-xl transition text-slate-500">Sign Up</button>
+      </div>
+ 
+      <!-- ============ LOGIN FORM ============ -->
+      <form id="login-form" class="space-y-4" onsubmit="return handleLogin(event)">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Email Address</label>
+          <input type="email" id="login-identifier" placeholder="name@gmail.com" required
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Password</label>
+          <input type="password" id="login-password" placeholder="Enter your password" required
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <p id="login-error" class="text-xs font-bold text-rose-600 hidden"></p>
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3 rounded-xl text-sm shadow-md transition">
+          Log In
+        </button>
+      </form>
+ 
+      <!-- ============ SIGN UP FORM ============ -->
+      <form id="signup-form" class="space-y-4 hidden" onsubmit="return handleSignup(event)">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Full Name</label>
+          <input type="text" id="signup-name" placeholder="Your full name" required
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Email Address</label>
+          <input type="email" id="signup-email" placeholder="name@gmail.com" required
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+ 
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Create Password</label>
+          <input type="password" id="signup-password" placeholder="At least 6 characters" minlength="6" required
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Confirm Password</label>
+          <input type="password" id="signup-password-confirm" placeholder="Re-enter password" minlength="6" required
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 focus:ring-brand-500">
+        </div>
+ 
+        <p id="signup-error" class="text-xs font-bold text-rose-600 hidden"></p>
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3 rounded-xl text-sm shadow-md transition">
+          Create Account
+        </button>
+      </form>
+
+      <form id="otp-form" class="space-y-4 hidden" onsubmit="return verifyOtp(event)">
+        <div><h2 class="text-xl font-black text-slate-900">Verify your email</h2><p class="text-xs text-slate-500 mt-1">We sent a 6-digit OTP to <strong id="otp-email"></strong>.</p></div>
+        <input id="signup-otp" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="Enter 6-digit OTP" required class="w-full border border-slate-300 rounded-xl px-4 py-3 text-center text-lg tracking-[0.5em] font-black outline-none focus:ring-2 focus:ring-brand-500">
+        <p id="otp-error" class="text-xs font-bold text-rose-600 hidden"></p>
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-extrabold py-3 rounded-xl text-sm shadow-md transition">Verify Email</button>
+        <button type="button" onclick="resendOtp()" class="w-full text-brand-700 text-xs font-bold py-2">Resend OTP</button>
+      </form>
+    </div>
+  </div>
+ 
+  <script src="login.js"></script>
+</body>
+</html>

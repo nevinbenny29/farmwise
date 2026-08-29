@@ -1,0 +1,79 @@
+/* Vast & Interactive Styles for FarmWise */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Offset anchor scrolling so the floating navbar does not cover section headings */
+section[id] {
+  scroll-margin-top: 7rem;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #1e293b;
+}
+
+/* Category Filter Active Pill */
+.category-btn.active {
+  background-color: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+/* Interactive Sliders Customization */
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #15803d;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  border: 2px solid #ffffff;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animation utilities */
+@keyframes pulseSubtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.pulse-live {
+  animation: pulseSubtle 2s infinite ease-in-out;
+}
+#sms-triggers-link{
+  background-color: #f59e0b;
+}
+#sms-triggers-link:hover{
+  background-color: #d97706;
+}
+#login{
+  transition: all 0.6s ease;
+}
+#login:hover{
+  border-radius: 30px;
+}

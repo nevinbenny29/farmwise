@@ -30,24 +30,38 @@ const pool = new Pool({
 app.use(express.json());
 app.use(cookieParser());
 
-// Frontend files are one folder above backend/
+// Frontend files
 const publicDir = path.join(__dirname, '..');
 app.use(express.static(publicDir));
 
-// Email
-const transporter = process.env.SMTP_HOST
-  ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 465),
-      secure: String(process.env.SMTP_SECURE).toLowerCase() === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
-    })
-  : null;
+// =========================
+// GMAIL SMTP
+// =========================
 
-// Helpers
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: String(process.env.SMTP_SECURE).toLowerCase() === 'true',
+  requireTLS: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
+
+// Test SMTP connection when server starts
+transporter.verify()
+  .then(() => {
+    console.log('SMTP connection works');
+  })
+  .catch((err) => {
+    console.error('SMTP connection failed:', err.message);
+  });
+
+// =========================
+// HELPERS
+// =========================
+
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
 }
@@ -64,7 +78,9 @@ function signToken(user) {
       name: user.name
     },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    {
+      expiresIn: '7d'
+    }
   );
 }
 
@@ -88,6 +104,7 @@ function auth(req, res, next) {
     }
 
     req.user = jwt.verify(token, JWT_SECRET);
+
     next();
   } catch {
     return res.status(401).json({
@@ -96,24 +113,37 @@ function auth(req, res, next) {
   }
 }
 
-// Send OTP
+// =========================
+// SEND OTP
+// =========================
+
 async function sendOtp(email, otp) {
-  if (!transporter) {
-    throw new Error('SMTP is not configured');
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    throw new Error('SMTP_USER or SMTP_PASS is missing');
   }
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    from: `"FarmWise" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
     to: email,
     subject: 'FarmWise email verification code',
-    text: `Your FarmWise verification code is ${otp}. It expires in 10 minutes.`,
+
+    text:
+      `Your FarmWise verification code is ${otp}.\n\n` +
+      `This code expires in 10 minutes.`,
+
     html: `
       <div style="font-family:Arial,sans-serif">
         <h2>FarmWise</h2>
         <p>Your verification code is:</p>
-        <p style="font-size:32px;font-weight:700;letter-spacing:8px">
+
+        <p style="
+          font-size:32px;
+          font-weight:700;
+          letter-spacing:8px;
+        ">
           ${otp}
         </p>
+
         <p>This code expires in 10 minutes.</p>
       </div>
     `
@@ -121,7 +151,7 @@ async function sendOtp(email, otp) {
 }
 
 // =========================
-// HEALTH CHECK
+// HEALTH
 // =========================
 
 app.get('/api/health', async (req, res) => {
@@ -130,10 +160,11 @@ app.get('/api/health', async (req, res) => {
 
     res.status(200).json({
       ok: true,
-      database: true
+      database: true,
+      smtp: true
     });
   } catch (err) {
-    console.error('Database health check failed:', err);
+    console.error('Health error:', err);
 
     res.status(503).json({
       ok: false,
@@ -175,6 +206,8 @@ app.post('/api/auth/request-signup-otp', async (req, res) => {
 
     const otp = makeOtp();
 
+    console.log(`Sending OTP to ${email}`);
+
     const otpHash = await bcrypt.hash(otp, 10);
     const passwordHash = await bcrypt.hash(password, 12);
 
@@ -186,34 +219,34 @@ app.post('/api/auth/request-signup-otp', async (req, res) => {
     await pool.query(
       `INSERT INTO email_otps
        (email, purpose, otp_hash, expires_at)
-       VALUES ($1, $2, $3, NOW() + INTERVAL '10 minutes')`,
+       VALUES
+       ($1, $2, $3, NOW() + INTERVAL '10 minutes')`,
       [email, 'signup', otpHash]
     );
 
     if (existing.rowCount) {
       await pool.query(
-        `UPDATE users
-         SET name=$1, password_hash=$2
-         WHERE email=$3`,
+        'UPDATE users SET name=$1,password_hash=$2 WHERE email=$3',
         [name, passwordHash, email]
       );
     } else {
       await pool.query(
-        `INSERT INTO users
-         (name, email, password_hash)
-         VALUES ($1, $2, $3)`,
+        'INSERT INTO users(name,email,password_hash) VALUES($1,$2,$3)',
         [name, email, passwordHash]
       );
     }
 
     await sendOtp(email, otp);
 
+    console.log(`OTP sent successfully to ${email}`);
+
     res.json({
       ok: true,
       message: 'OTP sent to your email.'
     });
+
   } catch (err) {
-    console.error(err);
+    console.error('OTP ERROR:', err);
 
     res.status(500).json({
       error: 'Could not send OTP. Check SMTP settings.'
@@ -222,7 +255,7 @@ app.post('/api/auth/request-signup-otp', async (req, res) => {
 });
 
 // =========================
-// SIGNUP - VERIFY OTP
+// VERIFY OTP
 // =========================
 
 app.post('/api/auth/verify-signup-otp', async (req, res) => {
@@ -309,8 +342,9 @@ app.post('/api/auth/verify-signup-otp', async (req, res) => {
         email: user.email
       }
     });
+
   } catch (err) {
-    console.error(err);
+    console.error('VERIFY OTP ERROR:', err);
 
     res.status(500).json({
       error: 'Verification failed.'
@@ -328,12 +362,7 @@ app.post('/api/auth/login', async (req, res) => {
     const password = String(req.body.password || '');
 
     const result = await pool.query(
-      `SELECT
-        id,
-        name,
-        email,
-        password_hash,
-        email_verified
+      `SELECT id,name,email,password_hash,email_verified
        FROM users
        WHERE email=$1`,
       [email]
@@ -354,12 +383,12 @@ app.post('/api/auth/login', async (req, res) => {
       });
     }
 
-    const passwordValid = await bcrypt.compare(
+    const validPassword = await bcrypt.compare(
       password,
       user.password_hash
     );
 
-    if (!passwordValid) {
+    if (!validPassword) {
       return res.status(401).json({
         error: 'Invalid email address or password.'
       });
@@ -377,8 +406,9 @@ app.post('/api/auth/login', async (req, res) => {
         email: user.email
       }
     });
+
   } catch (err) {
-    console.error(err);
+    console.error('LOGIN ERROR:', err);
 
     res.status(500).json({
       error: 'Login failed.'
@@ -414,7 +444,7 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // =========================
-// FRONTEND FALLBACK
+// FRONTEND
 // =========================
 
 app.get('*splat', (req, res) => {

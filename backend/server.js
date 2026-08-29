@@ -113,7 +113,6 @@ function auth(req, res, next) {
 // =========================
 // SEND OTP
 // =========================
-
 async function sendOtp(email, otp) {
   if (!transporter) throw new Error('SMTP is not configured');
 
@@ -121,27 +120,12 @@ async function sendOtp(email, otp) {
     from: process.env.SMTP_FROM || process.env.SMTP_USER,
     to: email,
     subject: 'FarmWise email verification code',
-    ...
-  });
-}
-
-    text:
-      `Your FarmWise verification code is ${otp}.\n\n` +
-      `This code expires in 10 minutes.`,
-
+    text: `Your FarmWise verification code is ${otp}. It expires in 10 minutes.`,
     html: `
       <div style="font-family:Arial,sans-serif">
         <h2>FarmWise</h2>
         <p>Your verification code is:</p>
-
-        <p style="
-          font-size:32px;
-          font-weight:700;
-          letter-spacing:8px;
-        ">
-          ${otp}
-        </p>
-
+        <p style="font-size:32px;font-weight:700;letter-spacing:8px">${otp}</p>
         <p>This code expires in 10 minutes.</p>
       </div>
     `

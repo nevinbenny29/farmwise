@@ -141,7 +141,6 @@ app.post('/api/auth/login', async (req, res) => {
     res.json({ ok: true, user: { name: user.name, email: user.email } });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Login failed.' }); }
 });
-
 app.get('/api/auth/me', auth, async (req, res) => {
   res.json({ authenticated: true, user: { id: req.user.id, name: req.user.name, email: req.user.email } });
 });
@@ -151,7 +150,23 @@ app.post('/api/auth/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('*splat', (req, res) => res.sendFile(path.join(publicDir, 'main.html')));
-
 console.log('HEALTH ROUTE VERSION: 2026-08-30');
-app.listen(PORT, () => console.log(`FarmWise server running on port ${PORT}`));
+
+app.get('/api/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ ok: true, database: true });
+  } catch (err) {
+    console.error(err);
+    res.status(503).json({ ok: false, database: false });
+  }
+});
+
+app.get('*splat', (req, res) =>
+  res.sendFile(path.join(publicDir, 'main.html'))
+);
+
+app.listen(PORT, () =>
+  console.log(`FarmWise server running on port ${PORT}`)
+);
+
